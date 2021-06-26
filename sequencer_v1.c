@@ -5,6 +5,10 @@
 #include <sys/ioctl.h>
 #include <linux/spi/spidev.h>
 
+#define NUMER_OF_NOTES_IN_OCTAVE 12
+#define MAX_NOTE_NAME_LENGTH 3
+
+char arrStrNotes[NUMER_OF_NOTES_IN_OCTAVE][MAX_NOTE_NAME_LENGTH] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 unsigned char mode;
 unsigned char bits = 8;
 unsigned int speed = 5000;
@@ -38,6 +42,21 @@ static void send(int fd, short val)
 		perror("Failed to send message.");
 		exit(1);
 	}
+}
+
+float getControlVoltage(int noteNumber)
+{
+	int cvNoteNumber = noteNumber + 3;
+	float controlVoltage = 5.0 / 60.0 * cvNoteNumber;
+	return controlVoltage;
+}
+
+void getNoteName(int noteNumber)
+{
+	int noteInOctave = noteNumber % NUMER_OF_NOTES_IN_OCTAVE;
+	char * note = arrStrNotes[noteInOctave];
+	int octave = noteNumber / NUMER_OF_NOTES_IN_OCTAVE;
+	printf("Note: %s%d: ", note, octave);
 }
 
 int main(int argc, char *argv[])
@@ -80,5 +99,14 @@ int main(int argc, char *argv[])
 	send(fd, 1023);
 	close(fd);
 	return status;
+
+	
+	getNoteName(0);
+	for (i = 0; i <= 60; i++)
+	{
+		getNoteName(i);
+		printf("%f\r\n", getControlVoltage(i));
+	}
+
 }
 
